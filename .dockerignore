@@ -1,45 +1,66 @@
-# Evita copiar archivos innecesarios a la imagen Docker.
-# Buena práctica mencionada por Bonanni (Clase 5): mantener la imagen mínima.
+# .dockerignore — excluye archivos innecesarios del contexto de build.
+# Imagen más chica, build más rápido, sin datos sensibles en la imagen.
+# Ref: https://docs.docker.com/build/building/context/#dockerignore-files
+# Buena práctica citada por Bonanni (Clase 5): mantener la imagen mínima.
 
-# Git
+# ── Control de versiones ─────────────────────────────────────
 .git
 .gitignore
 .github
+.gitattributes
 
-# Python
+# ── Python — bytecode y entornos virtuales ───────────────────
+# __pycache__ y .pyc/.pyo/.pyd son artefactos de compilación local,
+# no necesarios en la imagen (PYTHONDONTWRITEBYTECODE=1 los desactiva).
 __pycache__
 *.py[cod]
+.Python
 .venv
 venv
-.Python
+env
+.env
 
-# Testing
+# ── Python — artefactos de packaging ────────────────────────
+*.egg-info
+dist
+build
+
+# ── Testing ──────────────────────────────────────────────────
+# Tests no van en la imagen de producción — imagen mínima.
+tests
 .pytest_cache
 .coverage
 coverage.xml
 htmlcov
-tests
 
-# Entorno
-.env
+# ── Variables de entorno ─────────────────────────────────────
+# .env contiene secretos → nunca en la imagen.
+# .env.example es documentación → tampoco necesaria en runtime.
+# La config llega via env_file en docker-compose o variables del orquestador.
 .env.*
-!.env.example
+*.env
 
-# Base de datos local
+# ── Base de datos local ──────────────────────────────────────
 *.db
 *.sqlite3
 
-# Documentación / IDE
-.idea
-.vscode
+# ── New Relic ────────────────────────────────────────────────
+# newrelic.ini se inyecta en runtime vía NEW_RELIC_CONFIG_FILE.
+# No debe estar hardcodeado en la imagen.
+newrelic.ini
+
+# ── Documentación y curso ────────────────────────────────────
 *.md
 docs
 tp-devops-contexto-claude-code
 
-# New Relic config (se inyecta en runtime vía env vars, no en imagen)
-newrelic.ini
+# ── IDE / SO ─────────────────────────────────────────────────
+.idea
+.vscode
+.DS_Store
+*.log
 
-# Docker
-docker-compose.yml
+# ── Docker (no se auto-incluyen, pero por claridad) ──────────
 Dockerfile
+docker-compose.yml
 .dockerignore
