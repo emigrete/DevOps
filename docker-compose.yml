@@ -1,0 +1,99 @@
+# docker-compose.yml
+# Buena práctica: infraestructura como código — todo el stack reproducible
+# con un solo comando. Ref: https://docs.docker.com/compose/
+
+# Nota: la clave `version` está deprecada en Compose V2+.
+# Se omite intencionalmente. Ref: https://docs.docker.com/compose/compose-file/04-version-and-name/
+
+services:
+
+  # ── API ────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tp-devops-api
+
+    ports:
+      # Puerto expuesto al host. APP_PORT viene de .env.
+      # No hardcodear: permite cambiar el puerto sin tocar el compose.
+      - "${APP_PORT:-8000}:8000"
+
+    env_file:
+      # Buena práctica: credenciales y config fuera del compose,
+      # en un archivo .env que NO se versiona.
+      # Ref: https://docs.docker.com/compose/environment-variables/env-file/
+      - .env
+
+    depends_on:
+      db:
+        # Espera a que Postgres esté healthy antes de iniciar la API.
+        # Evita el race condition de "la API arranca antes que la DB".
+        # Ref: https://docs.docker.com/compose/how-tos/startup-order/
+        condition: service_healthy
+
+    restart: unless-stopped
+    # Reinicia automáticamente si el contenedor falla.
+    # unless-stopped: no reinicia si fue detenido manualmente.
+    # Ref: https://docs.docker.com/compose/compose-file/05-services/#restart
+
+    networks:
+      - tp-devops-net
+
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ── Base de datos ───────────────────────────────────────────
+  db:
+    # Versión pineada — no usar latest para garantizar reproducibilidad.
+    # Ref: https://docs.docker.com/develop/dev-best-practices/
+    image: postgres:16.3-alpine
+
+    container_name: tp-devops-db
+
+    environment:
+      # Credenciales desde .env — nunca hardcodeadas en el compose.
+      # Ref: https://hub.docker.com/_/postgres (sección Environment Variables)
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+
+    volumes:
+      # Volumen nombrado para persistencia de datos.
+      # Sin esto, los datos se pierden al recrear el contenedor.
+      # Ref: https://docs.docker.com/storage/volumes/
+      - postgres_data:/var/lib/postgresql/data
+
+    networks:
+      - tp-devops-net
+
+    restart: unless-stopped
+
+    healthcheck:
+      # pg_isready verifica que Postgres acepta conexiones.
+      # Usado por depends_on: condition: service_healthy del servicio api.
+      # Ref: https://www.postgresql.org/docs/current/app-pg-isready.html
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+# ── Volúmenes nombrados ─────────────────────────────────────
+volumes:
+  postgres_data:
+    # Declaración explícita del volumen para que Docker lo gestione.
+    # Persiste entre reinicios y recreaciones del contenedor.
+    # Ref: https://docs.docker.com/compose/compose-file/07-volumes/
+
+# ── Red nombrada ────────────────────────────────────────────
+networks:
+  tp-devops-net:
+    # Red nombrada aislada: los servicios se comunican por nombre
+    # (ej: la API conecta a "db:5432") sin exponer puertos al host.
+    # Ref: https://docs.docker.com/compose/networking/
+    driver: bridge
