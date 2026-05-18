@@ -1,0 +1,41 @@
+# Evita copiar archivos innecesarios a la imagen Docker.
+# Buena práctica mencionada por Bonanni (Clase 5): mantener la imagen mínima.
+
+# Git
+.git
+.gitignore
+.github
+
+# Python
+__pycache__
+*.py[cod]
+.venv
+venv
+.Python
+
+# Testing
+.pytest_cache
+.coverage
+coverage.xml
+htmlcov
+tests
+
+# Entorno
+.env
+.env.*
+!.env.example
+
+# Base de datos local
+*.db
+*.sqlite3
+
+# Documentación / IDE
+.idea
+.vscode
+*.md
+docs
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore

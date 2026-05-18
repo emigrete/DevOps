@@ -1,0 +1,22 @@
+# --- Framework API ---
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+
+# --- Validación / settings ---
+pydantic==2.10.4
+pydantic-settings==2.7.1
+
+# --- Base de datos ---
+sqlalchemy==2.0.36
+# Driver Postgres (para docker-compose, Fase 2)
+psycopg2-binary==2.9.10
+
+# --- Cliente HTTP (para llamar a PokeAPI - Clase 4) ---
+httpx==0.28.1
+
+# --- Testing (Fase 1) ---
+pytest==8.3.4
+pytest-cov==6.0.0
+
+# --- Monitoreo New Relic (Fase 6) ---
+newrelic==10.4.0
