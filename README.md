@@ -6,8 +6,9 @@ cada etapa del ciclo DevOps vista en clase.
 
 ## Integrantes
 
-- Integrante 1: _Nombre y Apellido_
-- Integrante 2: _Nombre y Apellido_
+- Francisco Daurat — Fase 1 (API + tests + base de datos)
+- Pedro Livschitz — Fase 2 (Dockerfile multi-stage + docker-compose)
+- Teodoro Welyczko — Fases 3-5 (CI/CD + Docker Hub + Render + monitoreo)
 
 ## Stack
 
