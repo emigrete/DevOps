@@ -5,7 +5,9 @@ router = APIRouter()
 
 @router.get("/health")
 def health():
-    return {"status": "ok"}
+    # DEMO: bug intencional para mostrar que el CI (test_health) frena el merge.
+    # NO mergear — esta branch es solo para demostrar el Andon Cord.
+    return {"status": "broken"}
 
 
 @router.get("/error-test")
