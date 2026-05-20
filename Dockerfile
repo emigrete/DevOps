@@ -74,7 +74,10 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
 
 EXPOSE 8000
 
-# CMD con uvicorn. Se usa la forma exec (lista) en lugar de shell
-# para que el proceso reciba señales SIGTERM correctamente.
-# Ref: https://docs.docker.com/reference/dockerfile/#cmd
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# CMD con uvicorn, envuelto por el agente de New Relic (Fase 6 - Monitoreo).
+# `newrelic-admin run-program` bootstrappea el agente y luego hace exec del
+# comando → uvicorn sigue recibiendo señales (SIGTERM) igual que en forma exec.
+# La config del agente llega por env vars (NEW_RELIC_LICENSE_KEY, NEW_RELIC_APP_NAME);
+# si no están seteadas, el agente no reporta pero la app arranca normal.
+# Ref: https://docs.newrelic.com/docs/apm/agents/python-agent/installation/standard-python-agent-install/
+CMD ["newrelic-admin", "run-program", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
