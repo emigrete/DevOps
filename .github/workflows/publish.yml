@@ -1,0 +1,72 @@
+# =============================================================
+# Publish & Deploy — Continuous Deployment.
+# Cada push a `main` (es decir, cada PR mergeado) publica la imagen
+# en Docker Hub y dispara el deploy en Render automáticamente.
+# Ref: https://docs.docker.com/build/ci/github-actions/
+# =============================================================
+name: Publish & Deploy
+
+on:
+  push:
+    branches: [main]
+  # Disparo manual desde la pestaña Actions — permite publicar de prueba
+  # (p. ej. desde una branch) sin tener que mergear a main.
+  # Ref: https://docs.github.com/actions/using-workflows/manually-running-a-workflow
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    # El hook de Render se expone como env (poblado desde el secret).
+    # Hace falta a nivel job para poder usarlo en el `if` del paso de deploy:
+    # el contexto `secrets` no se puede usar directo en `if`, pero `env` sí.
+    env:
+      RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Login a Docker Hub con SECRETS (nunca hardcodeados).
+      # DOCKER_API_KEY es la API Key / Access Token, NO la password (seguridad).
+      # Ref: https://github.com/docker/login-action
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_API_KEY }}
+
+      # Extrae tags y labels. metadata-action levanta los LABEL del Dockerfile.
+      # Ref: https://github.com/docker/metadata-action
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKER_USER }}/tp-devops
+          tags: |
+            type=sha               # tag = SHA del commit → trazabilidad
+            type=raw,value=latest  # tag `latest` para conveniencia
+
+      # Build + push de la imagen al registry (push: true).
+      # Ref: https://github.com/docker/build-push-action
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Deploy a Render: curl al Deploy Hook pasando la imagen por query param.
+      # NO se usa `latest` — se pasa el tag SHA para deployar exactamente este commit.
+      # Se saltea si todavía no existe el hook (Render aún no configurado).
+      # Ref: https://render.com/docs/deploy-hooks
+      - name: Trigger Render deploy
+        if: env.RENDER_DEPLOY_HOOK != ''
+        run: |
+          IMG="docker.io/${{ secrets.DOCKER_USER }}/tp-devops:sha-${GITHUB_SHA::7}"
+          curl -fsSL "${RENDER_DEPLOY_HOOK}&imgURL=${IMG}"
