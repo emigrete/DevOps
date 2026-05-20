@@ -9,6 +9,10 @@ name: Publish & Deploy
 on:
   push:
     branches: [main]
+  # Disparo manual desde la pestaña Actions — permite publicar de prueba
+  # (p. ej. desde una branch) sin tener que mergear a main.
+  # Ref: https://docs.github.com/actions/using-workflows/manually-running-a-workflow
+  workflow_dispatch:
 
 jobs:
   publish:
