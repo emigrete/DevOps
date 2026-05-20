@@ -21,7 +21,9 @@ services:
 
     env_file:
       # Buena práctica: credenciales y config fuera del compose,
-      # en un archivo .env que NO se versiona.
+      # en un archivo .env que NO se versiona. Incluye también las variables
+      # de New Relic (NEW_RELIC_LICENSE_KEY, NEW_RELIC_APP_NAME, ...) que
+      # consume el agente arrancado vía `newrelic-admin run-program` (Dockerfile).
       # Ref: https://docs.docker.com/compose/environment-variables/env-file/
       - .env
 
