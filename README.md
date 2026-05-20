@@ -71,11 +71,14 @@ pytest --cov=app
 | CI/CD | Flujo de mergeo | 1 | ✅ |
 | CI/CD | Publicación dockerfile | 2 | ✅ |
 | CI/CD | Despliegue a Render | 1 | ✅ |
-| Monitoreo | Dashboard (Hits, etc) | 1,5 | ⬜ |
-| Monitoreo | APM / Trazas | 1 | ⬜ |
-| | **Logrado** | **7,5 / 10** | |
+| Monitoreo | Dashboard (Hits, etc) | 1,5 | ✅ |
+| Monitoreo | APM / Trazas | 1 | ✅ |
+| | **Logrado** | **10 / 10** | |
 
-> Pendiente: monitoreo con New Relic (Dashboard + APM/Trazas) — Fase 6.
+> Todas las fases completas: API + tests, Docker multi-stage + compose, CI
+> (lint/test/build), flujo de mergeo con rama protegida, publicación a Docker Hub
+> (SHA + latest), deploy a Render y monitoreo con New Relic (dashboard + trazas
+> encadenadas APM).
 
 ## Relación con la teoría
 
