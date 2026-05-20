@@ -29,6 +29,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Builder con driver docker-container: necesario para exportar cache a
+      # GitHub Actions (cache-to: type=gha). El driver `docker` por defecto
+      # no lo soporta. Ref: https://github.com/docker/setup-buildx-action
+      - uses: docker/setup-buildx-action@v3
+
       # Login a Docker Hub con SECRETS (nunca hardcodeados).
       # DOCKER_API_KEY es la API Key / Access Token, NO la password (seguridad).
       # Ref: https://github.com/docker/login-action
