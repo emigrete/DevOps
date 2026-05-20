@@ -63,17 +63,19 @@ pytest --cov=app
 
 | Módulo | Ítem | Puntaje | Estado |
 |---|---|---|---|
-| Dockerfile | Dockerfile (requerido) | 1 | ⬜ |
-| Dockerfile | Multi-stage | 1 | ⬜ |
-| Dockerfile | Buenas prácticas | 0,5 | ⬜ |
-| Docker compose | Buenas prácticas | 0,5 | ⬜ |
-| CI/CD | Checks (build + unit test) | 0,5 | ⬜ |
-| CI/CD | Flujo de mergeo | 1 | ⬜ |
-| CI/CD | Publicación dockerfile | 2 | ⬜ |
-| CI/CD | Despliegue a Render | 1 | ⬜ |
+| Dockerfile | Dockerfile (requerido) | 1 | ✅ |
+| Dockerfile | Multi-stage | 1 | ✅ |
+| Dockerfile | Buenas prácticas | 0,5 | ✅ |
+| Docker compose | Buenas prácticas | 0,5 | ✅ |
+| CI/CD | Checks (build + unit test) | 0,5 | ✅ |
+| CI/CD | Flujo de mergeo | 1 | ✅ |
+| CI/CD | Publicación dockerfile | 2 | ✅ |
+| CI/CD | Despliegue a Render | 1 | ✅ |
 | Monitoreo | Dashboard (Hits, etc) | 1,5 | ⬜ |
 | Monitoreo | APM / Trazas | 1 | ⬜ |
-| | **TOTAL** | **10** | |
+| | **Logrado** | **7,5 / 10** | |
+
+> Pendiente: monitoreo con New Relic (Dashboard + APM/Trazas) — Fase 6.
 
 ## Relación con la teoría
 
