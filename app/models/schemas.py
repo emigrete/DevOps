@@ -7,6 +7,11 @@ class ItemCreate(BaseModel):
     description: str | None = Field(default=None, max_length=500)
 
 
+class ItemUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=100)
+    description: str | None = Field(default=None, max_length=500)
+
+
 class ItemOut(BaseModel):
     id: int
     name: str

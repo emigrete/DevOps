@@ -1,7 +1,7 @@
 import newrelic.agent
 from sqlalchemy.orm import Session
 from app.db.item_model import Item
-from app.models.schemas import ItemCreate
+from app.models.schemas import ItemCreate, ItemUpdate
 
 
 # function_trace en cada operación → la traza muestra la capa service
@@ -23,6 +23,19 @@ def list_items(db: Session) -> list[Item]:
 @newrelic.agent.function_trace()
 def get_item(db: Session, item_id: int) -> Item | None:
     return db.query(Item).filter(Item.id == item_id).first()
+
+
+@newrelic.agent.function_trace()
+def update_item(db: Session, item_id: int, data: ItemUpdate) -> Item | None:
+    item = get_item(db, item_id)
+    if not item:
+        return None
+    # exclude_unset → solo los campos que el cliente envió (semántica PATCH).
+    for field, value in data.model_dump(exclude_unset=True).items():
+        setattr(item, field, value)
+    db.commit()
+    db.refresh(item)
+    return item
 
 
 @newrelic.agent.function_trace()
