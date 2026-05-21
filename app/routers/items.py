@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.database import get_db
-from app.models.schemas import ItemCreate, ItemOut
+from app.models.schemas import ItemCreate, ItemUpdate, ItemOut
 from app.services import items_service
 
 router = APIRouter(prefix="/items")
@@ -20,6 +20,14 @@ def create_item(data: ItemCreate, db: Session = Depends(get_db)):
 @router.get("/{item_id}", response_model=ItemOut)
 def get_item(item_id: int, db: Session = Depends(get_db)):
     item = items_service.get_item(db, item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
+
+
+@router.patch("/{item_id}", response_model=ItemOut)
+def update_item(item_id: int, data: ItemUpdate, db: Session = Depends(get_db)):
+    item = items_service.update_item(db, item_id, data)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
     return item

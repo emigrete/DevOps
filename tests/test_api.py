@@ -40,6 +40,23 @@ def test_delete_item(client):
     assert response.status_code == 404
 
 
+def test_update_item(client):
+    create = client.post("/items", json={"name": "Original", "description": "desc"})
+    item_id = create.json()["id"]
+
+    # PATCH parcial: solo name; description debe quedar intacta.
+    response = client.patch(f"/items/{item_id}", json={"name": "Editado"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == "Editado"
+    assert data["description"] == "desc"
+
+
+def test_update_item_not_found(client):
+    response = client.patch("/items/999", json={"name": "X"})
+    assert response.status_code == 404
+
+
 def test_pokemon(client):
     mock_data = {"id": 25, "name": "pikachu", "height": 4, "weight": 60}
     with patch(
