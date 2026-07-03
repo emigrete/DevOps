@@ -38,6 +38,51 @@ jobs:
       # pytest con cobertura — los tests unitarios de Persona A.
       - run: pytest --cov=app
 
+  # ── Security gate (DevSecOps) ────────────────────────────────
+  # Cuarto check en la vía protegida: escaneo de seguridad en cada PR.
+  # Andon Cord de seguridad — si aparece un CVE CRITICAL/HIGH, un secret
+  # commiteado o una mala práctica en el Dockerfile, el pipeline frena y
+  # el PR no se puede mergear. "Shift left": el hallazgo se ve antes del
+  # deploy, no en producción.
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Trivy: escanea el filesystem del repo — CVEs en dependencias del
+      # SO y del lenguaje. severity CRITICAL,HIGH + exit-code 1 → frena.
+      # Ref: https://github.com/aquasecurity/trivy-action
+      - name: Trivy — CVEs en deps
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+          ignore-unfixed: true # solo falla por CVEs con fix disponible
+
+      # pip-audit: CVEs específicos de las deps Python de requirements.txt
+      # (requirements pineado → auditoría reproducible).
+      # Ref: https://github.com/pypa/pip-audit
+      - name: pip-audit — CVEs en deps Python
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt
+
+      # hadolint: linter del Dockerfile — buenas prácticas de imagen.
+      # Ref: https://github.com/hadolint/hadolint-action
+      - name: hadolint — lint del Dockerfile
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+
+      # gitleaks: detecta secrets commiteados (API keys, tokens, passwords).
+      # Ref: https://github.com/gitleaks/gitleaks-action
+      - name: gitleaks — secrets commiteados
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   # ── Build de la imagen ───────────────────────────────────────
   # Valida que el Dockerfile (Persona B) compila. SIN push: la
   # publicación a Docker Hub vive en publish.yml (solo en main).
