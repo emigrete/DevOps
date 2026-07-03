@@ -20,7 +20,9 @@ WORKDIR /build
 # Ref: https://docs.docker.com/build/cache/
 COPY requirements.txt .
 
-RUN pip install --upgrade pip --no-cache-dir \
+# pip pineado (hadolint DL3013): mismas razones que requirements.txt —
+# builds reproducibles; un pip nuevo no cambia el comportamiento del build.
+RUN pip install --no-cache-dir pip==26.1.2 \
     && pip install --no-cache-dir --prefix=/install -r requirements.txt
 
 
