@@ -48,6 +48,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Historia completa: gitleaks escanea el rango de commits del PR
+          # (base^..head) y con el shallow clone por defecto (fetch-depth: 1)
+          # el commit base no existe localmente → git falla.
+          # Ref: https://github.com/gitleaks/gitleaks-action#usage
+          fetch-depth: 0
 
       # Trivy: escanea el filesystem del repo — CVEs en dependencias del
       # SO y del lenguaje. severity CRITICAL,HIGH + exit-code 1 → frena.
